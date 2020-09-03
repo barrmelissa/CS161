@@ -1,0 +1,192 @@
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+#define R 9
+#define C 9
+#define M 10
+void init(char grid[][C], char c){
+   for(int i=0; i<R; i++)
+      for(int j=0; j<C; j++)
+	 grid[i][j]=c;
+}
+void place_mines(char grid[][C]){
+   int r, c;
+   for(int i=0; i<M; i++){
+      do {
+	 r=rand()%R;
+	 c=rand()%C;
+      } while(grid[r][c]=='*');
+      grid[r][c]='*';
+   }
+}
+void enter_num(char grid[][C], int i, int j){
+   int count=0;
+   if(i!=0 && grid[i-1][j]=='*') count++;
+   if(j!=0 && grid[i][j-1]=='*') count++;
+   if(i!=R-1 && grid[i+1][j]=='*') count++;
+   if(j!=C-1 && grid[i][j+1]=='*') count++;
+   if(i!=0 && j!=0 && grid[i-1][j-1]=='*') count++;
+   if(i!=0 && j!=C-1 && grid[i-1][j+1]=='*') count++;
+   if(i!=R-1 && j!=0 && grid[i+1][j-1]=='*') count++;
+   if(i!=R-1 && j!=C-1 && grid[i+1][j+1]=='*') count++;
+   grid[i][j]=(char) (count+48);
+}
+void place_numbers(char grid[][C]){
+   for(int i=0; i<R; i++)
+      for(int j=0; j<C; j++)
+         if(grid[i][j]!='*')
+	   enter_num(grid, i, j); 
+}
+void print_grid(char grid[][C]){
+   for(int i=0; i<R; i++) {
+      for(int j=0; j<C; j++)
+          cout << "--";
+      cout << "-" << endl;
+      for(int j=0; j<C; j++)
+          cout << "|" << grid[i][j];
+      cout << "|" << endl;
+   }
+   for(int j=0; j<C; j++)
+      cout << "--";
+   cout << "-" << endl;
+   cout << endl;
+}
+int open_more(char d_grid[][C], char m_grid[][C], int i, int j);
+int go_up(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=0 && d_grid[i-1][j]==' ') {
+      d_grid[i-1][j]=m_grid[i-1][j];
+      count++;
+      if(m_grid[i-1][j]=='0')
+	 count+=open_more(d_grid, m_grid, i-1, j);
+   }
+   return count;
+}
+int go_left(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(j!=0 && d_grid[i][j-1]==' ') {
+      d_grid[i][j-1]=m_grid[i][j-1];
+      count++;
+      if(m_grid[i][j-1]=='0')
+	 count+=open_more(d_grid, m_grid, i, j-1);
+   }
+   return count;
+}
+int go_down(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=R-1 && d_grid[i+1][j]==' ') {
+      d_grid[i+1][j]=m_grid[i+1][j];
+      count++;
+      if(m_grid[i+1][j]=='0')
+	 count+=open_more(d_grid, m_grid, i+1, j);
+   }
+   return count;
+}
+int go_right(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(j!=C-1 && d_grid[i][j+1]==' ') {
+      d_grid[i][j+1]=m_grid[i][j+1];
+      count++;
+      if(m_grid[i][j+1]=='0')
+	 count+=open_more(d_grid, m_grid, i, j+1);
+   }
+   return count;
+}
+int go_upleft(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=0 && j!=0 && d_grid[i-1][j-1]==' ') {
+      d_grid[i-1][j-1]=m_grid[i-1][j-1];
+      count++;
+      if(m_grid[i-1][j-1]=='0')
+	 count+=open_more(d_grid, m_grid, i-1, j-1);
+   }
+   return count;
+}
+int go_upright(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=0 && j!=C-1 && d_grid[i-1][j+1]==' ') {
+      d_grid[i-1][j+1]=m_grid[i-1][j+1];
+      count++;
+      if(m_grid[i-1][j+1]=='0')
+	 count+=open_more(d_grid, m_grid, i-1, j+1);
+   } 
+   return count;
+}
+int go_downleft(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=R-1 && j!=0 && d_grid[i+1][j-1]==' ') {
+      d_grid[i+1][j-1]=m_grid[i+1][j-1];
+      count++;
+      if(m_grid[i+1][j-1]=='0')
+	 count+=open_more(d_grid, m_grid, i+1, j-1);
+   }
+   return count;
+}
+int go_downright(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   if(i!=R-1 && j!=C-1 && d_grid[i+1][j+1]==' ') {
+      d_grid[i+1][j+1]=m_grid[i+1][j+1];
+      count++;
+      if(m_grid[i+1][j+1]=='0')
+	 count+=open_more(d_grid, m_grid, i+1, j+1);
+   }
+   return count;
+}
+int open_more(char d_grid[][C], char m_grid[][C], int i, int j){
+   int count=0;
+   //check all 8 directions to see if more need to be opened...
+   count+=go_up(d_grid, m_grid, i, j);
+   count+=go_left(d_grid, m_grid, i, j);
+   count+=go_down(d_grid, m_grid, i, j);
+   count+=go_right(d_grid, m_grid, i, j);
+   count+=go_upleft(d_grid, m_grid, i, j);
+   count+=go_upright(d_grid, m_grid, i, j);
+   count+=go_downleft(d_grid, m_grid, i, j);
+   count+=go_downright(d_grid, m_grid, i, j);
+   return count;
+}
+void input(int &option, int &r, int &c) {
+      cout << "Flag(1) or Open(2): ";
+      cin >> option;
+      cout << "row, col: ";
+      cin >> r; 
+      cin >> c;
+}
+void play_game(char m_grid[][C], char d_grid[][C]){
+   int opened=0;
+   int option, r, c;
+
+   while(opened!=R*C-M){
+      print_grid(d_grid);
+      input(option, r, c);
+      if(option==1)
+	 d_grid[r][c]='!';
+      else if(m_grid[r][c]=='*') {
+	 cout << "You lose!!!" << endl;
+	 break;
+      }
+      else {
+	 d_grid[r][c]=m_grid[r][c];
+	 opened++;
+	 if(m_grid[r][c]=='0')
+	    opened+=open_more(d_grid, m_grid, r, c);
+      }
+   }
+   if(opened==R*C-M)
+      cout << "Congratulations!!!" << endl;
+}
+int main(){
+   char m_grid[R][C], d_grid[R][C];
+   srand(time(NULL));
+
+   init(d_grid, ' ');
+   place_mines(m_grid);
+   place_numbers(m_grid);
+
+   //print_grid(m_grid);
+   //print_grid(d_grid);
+   play_game(m_grid, d_grid);
+   print_grid(m_grid);
+
+   return 0;
+}
